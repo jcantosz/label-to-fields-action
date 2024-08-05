@@ -29205,7 +29205,7 @@ const auth = {
   token: core.getInput("TOKEN"),
 };
 
-const repoArr = (core.getInput("REPOSITORY") || payload?.repository).split("/");
+const repoArr = (core.getInput("REPOSITORY") || payload?.repository?.full_name).split("/");
 const org = repoArr[0],
   repo = repoArr[1];
 
@@ -29364,9 +29364,7 @@ function getProjectId(properties) {
 }
 
 async function main() {
-  core.debug(`Trigger payload: ${JSON.stringify(payload)}`);
-
-  core.debug(`inputs:
+  core.debug(`Inputs:
       csv_file: ${csvFile}
       repoArr: ${repoArr}
       org: ${org}
