@@ -4,7 +4,8 @@ import { graphql } from "@octokit/graphql";
 import * as github from "@actions/github";
 const { parse } = await import("csv-parse/sync");
 
-const payload = github.payload;
+const payload = github.context.payload;
+core.debug(`Trigger payload: ${JSON.stringify(payload)}`);
 
 const csvFile = core.getInput("CSV_FILE_PATH");
 
@@ -174,6 +175,18 @@ function getProjectId(properties) {
 }
 
 async function main() {
+  core.debug(`Trigger payload: ${JSON.stringify(payload)}`);
+
+  core.debug(`inputs:
+      csv_file: ${csvFile}
+      repoArr: ${repoArr}
+      org: ${org}
+      repo: ${repo}
+      issueNumber: ${issueNumber}
+      projectNumber: ${projectNumber}
+      labelHeader: ${labelHeader}
+      label: ${label}
+      `);
   // read labels
   const csv = readCSV(csvFile);
 

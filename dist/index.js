@@ -29193,7 +29193,8 @@ const core = await __nccwpck_require__.e(/* import() */ 7).then(__nccwpck_requir
 
 const { parse } = await __nccwpck_require__.e(/* import() */ 936).then(__nccwpck_require__.bind(__nccwpck_require__, 3936));
 
-const payload = _actions_github__WEBPACK_IMPORTED_MODULE_0__.payload;
+const payload = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.payload;
+core.debug(`Trigger payload: ${JSON.stringify(payload)}`);
 
 const csvFile = core.getInput("CSV_FILE_PATH");
 
@@ -29363,10 +29364,18 @@ function getProjectId(properties) {
 }
 
 async function main() {
-  // if (!token) {
-  //   console.error(`Token not specified, please set the input "GITHUB_TOKEN"`, 1);
-  // }
+  core.debug(`Trigger payload: ${JSON.stringify(payload)}`);
 
+  core.debug(`inputs:
+      csv_file: ${csvFile}
+      repoArr: ${repoArr}
+      org: ${org}
+      repo: ${repo}
+      issueNumber: ${issueNumber}
+      projectNumber: ${projectNumber}
+      labelHeader: ${labelHeader}
+      label: ${label}
+      `);
   // read labels
   const csv = readCSV(csvFile);
 
