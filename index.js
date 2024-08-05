@@ -162,7 +162,7 @@ async function updateIssueFields(graphqlWithAuth, projectId, itemId, label, csvL
         core.debug(`Updating project (id: ${projectId})'s item (id: ${itemId}).`);
         core.debug(`\tsetting field: ${field} (id: ${fieldId}) to option: ${fieldOption} (id: ${fieldOptionId})`);
 
-        core.summary.addRaw(`Setting field: ${field} to ${fieldOption}`, true);
+        core.summary.addRaw(`Setting field "${field}" to "${fieldOption}"`, true);
         updateProjectField(graphqlWithAuth, projectId, itemId, fieldId, fieldOptionId);
       } else {
         core.error(`Invalid field or option selected for label "${label}" -> ${field}:${fieldOption}`);
@@ -218,7 +218,7 @@ async function main() {
     updateIssueFields(graphqlWithAuth, projectId, projectItemId, label, csvLine, projectKeys, fieldsData);
   } else {
     core.info(`Label ${label} not found in csv file (${csvFile}). Exiting`);
-    core.summary.addRaw(`Label ${label} not found in csv file (${csvFile}).`, true);
+    core.summary.addRaw(`Label "${label}" not found in csv file (${csvFile}).`, true);
   }
   core.summary.write();
 }
