@@ -29209,8 +29209,8 @@ const repoArr = (core.getInput("REPOSITORY") || payload?.repository?.full_name).
 const org = repoArr[0],
   repo = repoArr[1];
 
-const issueNumber = core.getInput("ISSUE_NUMBER") || payload?.issue?.number;
-const projectNumber = core.getInput("PROJECT_NUMBER");
+const issueNumber = parseInt(core.getInput("ISSUE_NUMBER") || payload?.issue?.number);
+const projectNumber = parseInt(core.getInput("PROJECT_NUMBER"));
 const labelHeader = core.getInput("CSV_LABEL_HEADER");
 const label = core.getInput("LABEL") || payload?.label?.name;
 
@@ -29332,16 +29332,16 @@ function readCSV(csvFile) {
   });
 }
 
-async function updateIssueFields(graphqlWithAuth, projectId, itemId, label, filteredCSV, projectKeys, fieldsData) {
+async function updateIssueFields(graphqlWithAuth, projectId, itemId, label, csvLine, projectKeys, fieldsData) {
   // { Label: "name", KEY1: "option", KEY2: "option"}
-  const labelFields = filteredCSV.find((item) => label == item[labelHeader]);
   core.info(`Processing label ${label}`);
 
   // loop through all the fields from the CSV
   for (const field of projectKeys) {
     // get the current fields' desired value
-    const fieldOption = labelFields[field];
+    const fieldOption = csvLine[field];
     if (fieldOption) {
+      core.info(`Setting field: ${field} to ${fieldOption}`);
       // get the id for the selected options
       const fieldId = getFieldId(fieldsData, field);
       const fieldOptionId = getOptionId(fieldsData, field, fieldOption);
@@ -29360,7 +29360,7 @@ async function updateIssueFields(graphqlWithAuth, projectId, itemId, label, filt
 }
 
 function getProjectId(properties) {
-  return projectV2.id;
+  return properties.id;
 }
 
 async function main() {
@@ -29376,17 +29376,21 @@ async function main() {
       `);
   // read labels
   const csv = readCSV(csvFile);
+  core.debug(`csv: ${JSON.stringify(csv)}`);
 
   // Get all the relevant fields from the CSV for the input labels
-  const filteredCSV = csv.filter((label) => label.includes(label[labelHeader]));
+  const csvLine = csv.find((element) => element[labelHeader] == label);
+  core.debug(`csvLine: ${JSON.stringify(csvLine)}`);
 
   // Get all of the keys from the filtered item excluding the 'label' key
-  const projectKeys = Object.keys(filteredCSV[0]).filter((key) => key != labelHeader);
+  const projectKeys = Object.keys(csvLine).filter((key) => key != labelHeader);
+  core.debug(`projectKeys: ${projectKeys}`);
 
   const graphqlWithAuth = getGraphQLClient();
 
   // Get details about the project from graphQL
   const properties = await getProjectProperties(graphqlWithAuth, org, repo, issueNumber, projectNumber);
+  core.debug(`project properties: ${properties}`);
 
   const projectV2 = properties.organization.projectV2;
 
@@ -29398,7 +29402,8 @@ async function main() {
   const fieldsData = getFieldData(projectV2.fields.nodes, projectKeys);
 
   // for the label applied to the issue
-  updateIssueFields(graphqlWithAuth, projectId, projectItemId, label, filteredCSV, projectKeys, fieldsData);
+  core.info("Updating project fields");
+  updateIssueFields(graphqlWithAuth, projectId, projectItemId, label, csvLine, projectKeys, fieldsData);
 }
 
 main();
