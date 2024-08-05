@@ -162,6 +162,7 @@ async function updateIssueFields(graphqlWithAuth, projectId, itemId, label, csvL
         core.debug(`Updating project (id: ${projectId})'s item (id: ${itemId}).`);
         core.debug(`\tsetting field: ${field} (id: ${fieldId}) to option: ${fieldOption} (id: ${fieldOptionId})`);
 
+        core.summary.addRaw(`Setting field: ${field} to ${fieldOption}`, true);
         updateProjectField(graphqlWithAuth, projectId, itemId, fieldId, fieldOptionId);
       } else {
         core.error(`Invalid field or option selected for label "${label}" -> ${field}:${fieldOption}`);
@@ -192,29 +193,34 @@ async function main() {
   // Get all the relevant fields from the CSV for the input labels
   const csvLine = csv.find((element) => element[labelHeader] == label);
   core.debug(`csvLine: ${JSON.stringify(csvLine)}`);
+  if (csvLine) {
+    // Get all of the keys from the filtered item excluding the 'label' key
+    const projectKeys = Object.keys(csvLine).filter((key) => key != labelHeader);
+    core.debug(`projectKeys: ${projectKeys}`);
 
-  // Get all of the keys from the filtered item excluding the 'label' key
-  const projectKeys = Object.keys(csvLine).filter((key) => key != labelHeader);
-  core.debug(`projectKeys: ${projectKeys}`);
+    const graphqlWithAuth = getGraphQLClient();
 
-  const graphqlWithAuth = getGraphQLClient();
+    // Get details about the project from graphQL
+    const properties = await getProjectProperties(graphqlWithAuth, org, repo, issueNumber, projectNumber);
+    core.debug(`project properties: ${properties}`);
 
-  // Get details about the project from graphQL
-  const properties = await getProjectProperties(graphqlWithAuth, org, repo, issueNumber, projectNumber);
-  core.debug(`project properties: ${properties}`);
+    const projectV2 = properties.organization.projectV2;
 
-  const projectV2 = properties.organization.projectV2;
+    const projectId = getProjectId(projectV2);
 
-  const projectId = getProjectId(projectV2);
+    const projectItems = properties.organization.repository.issue.projectItems.nodes;
+    const projectItemId = getProjectItemId(projectItems, projectId);
 
-  const projectItems = properties.organization.repository.issue.projectItems.nodes;
-  const projectItemId = getProjectItemId(projectItems, projectId);
+    const fieldsData = getFieldData(projectV2.fields.nodes, projectKeys);
 
-  const fieldsData = getFieldData(projectV2.fields.nodes, projectKeys);
-
-  // for the label applied to the issue
-  core.info("Updating project fields");
-  updateIssueFields(graphqlWithAuth, projectId, projectItemId, label, csvLine, projectKeys, fieldsData);
+    // for the label applied to the issue
+    core.info("Updating project fields");
+    updateIssueFields(graphqlWithAuth, projectId, projectItemId, label, csvLine, projectKeys, fieldsData);
+  } else {
+    core.info(`Label ${label} not found in csv file (${csvFile}). Exiting`);
+    core.summary.addRaw(`Label ${label} not found in csv file (${csvFile}).`, true);
+  }
+  core.summary.write();
 }
 
 main();
