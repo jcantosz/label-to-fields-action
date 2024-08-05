@@ -1,0 +1,45 @@
+name: "Label-to-fields"
+description: "A GitHub Action that sets project fields for an issue based on the label applied to the issue"
+
+inputs:
+  # Auth
+  app_id:
+    description: "GitHub App ID"
+    required: false
+  app_private_key:
+    description: "GitHub App Private Key"
+    required: false
+  app_installation_id:
+    description: "GitHub App Installation ID"
+    required: false
+  token:
+    description: "GitHub Token"
+    required: false
+
+  # CSV
+  csv_file_path:
+    description: "Path to the CSV file"
+    required: false
+    default: ".github/label-fields.csv"
+  csv_label_header:
+    description: "Header for the label in the CSV file. Defaults to 'Label'"
+    required: false
+    default: "Label"
+
+  # GitHub objects
+  repository:
+    description: "Repository in the format owner/repo. Will use the current repo is none is provided"
+    required: false
+  issue_number:
+    description: "Issue number. Will use the issue that triggered the workflow if none is provided"
+    required: false
+  project_number:
+    description: "Project number"
+    required: true
+  label:
+    description: "The name of the label that was applied to the issue"
+    required: false
+
+runs:
+  using: "node20"
+  main: ".dist/index.js"
