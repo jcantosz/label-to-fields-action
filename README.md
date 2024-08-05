@@ -42,6 +42,8 @@ Eather,Sven,
 ### Example workflow
 
 ```yaml
+name: Issue Label to Project Field
+
 on:
   issues:
     types: [labeled]
@@ -51,6 +53,7 @@ jobs:
     name: Update Project Fields
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: Label to Fields
         uses: jcantosz/label-to-fields-action@main
         with:
@@ -61,6 +64,8 @@ jobs:
 Full properties
 
 ```yaml
+name: Issue Label to Project Field
+
 on:
   issues:
     types: [labeled]
@@ -70,6 +75,7 @@ jobs:
     name: Update Project Fields
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: Label to Fields
         uses: jcantosz/label-to-fields-action@main
         with:
