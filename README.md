@@ -13,6 +13,7 @@ Each line must have a value in the label column and have the value of the single
 - **`app_private_key`**: GitHub App Private Key. (Optional)
 - **`app_installation_id`**: GitHub App Installation ID. (Optional)
 - **`token`**: GitHub Token. (Optional)
+- **`api_url`**: The URL of the GitHub API. Change this if using GHES. Defaults to `https://api.github.com` (Optional)
 
 - **`csv_file_path`**: Path to the CSV file. Defaults to `.github/label-fields.csv`. (Optional)
 - **`csv_label_header`**: Header for the label in the CSV file. Defaults to `Label`. (Optional)

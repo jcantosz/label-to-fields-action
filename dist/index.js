@@ -29211,6 +29211,7 @@ const auth = {
   appPrivateKey: core.getInput("APP_PRIVATE_KEY"),
   appInstallationId: core.getInput("APP_INSTALLATION_ID"),
   token: core.getInput("TOKEN"),
+  apiUrl: core.getInput("API_URL"),
 };
 
 const repoArr = (core.getInput("REPOSITORY") || payload?.repository?.full_name).split("/");
@@ -29222,6 +29223,10 @@ const projectNumber = parseInt(core.getInput("PROJECT_NUMBER"));
 const labelHeader = core.getInput("CSV_LABEL_HEADER");
 const label = core.getInput("LABEL") || payload?.label?.name;
 
+// fallback to github.com for local test
+const ghBaseUrl = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.server_url || "github.com";
+const issueLink = payload?.issue?.html_url || `https://${ghBaseUrl}/${org}/${repo}/issues/${issueNumber}`;
+
 function getGraphQLAppClient() {
   const appAuth = createAppAuth({
     appId: auth.appId,
@@ -29229,6 +29234,7 @@ function getGraphQLAppClient() {
     installationId: auth.appInstallationId,
   });
   return _octokit_graphql__WEBPACK_IMPORTED_MODULE_1__/* .graphql.defaults */ .BX.defaults({
+    baseUrl: auth.apiUrl,
     request: {
       hook: appAuth.hook,
     },
@@ -29238,6 +29244,7 @@ function getGraphQLAppClient() {
 function getGraphQLTokenClient() {
   return _octokit_graphql__WEBPACK_IMPORTED_MODULE_1__/* .graphql.defaults */ .BX.defaults({
     headers: {
+      baseUrl: auth.apiUrl,
       authorization: `token ${auth.token}`,
     },
   });
@@ -29378,11 +29385,13 @@ async function main() {
       repoArr: ${repoArr}
       org: ${org}
       repo: ${repo}
-      issueNumber: ${issueNumber}
+      issueNumber: ${issueNumber}q
       projectNumber: ${projectNumber}
       labelHeader: ${labelHeader}
       label: ${label}
+      apiUrl: ${auth.apiUrl}
       `);
+  core.info(`Issue link: ${issueLink}`);
   // read labels
   const csv = readCSV(csvFile);
   core.debug(`csv: ${JSON.stringify(csv)}`);
@@ -29399,7 +29408,7 @@ async function main() {
 
     // Get details about the project from graphQL
     const properties = await getProjectProperties(graphqlWithAuth, org, repo, issueNumber, projectNumber);
-    core.debug(`project properties: ${properties}`);
+    core.debug(`project properties: ${JSON.stringify(properties)}`);
 
     const projectV2 = properties.organization.projectV2;
 
@@ -29417,6 +29426,7 @@ async function main() {
     core.info(`Label ${label} not found in csv file (${csvFile}). Exiting`);
     core.summary.addRaw(`Label "${label}" not found in csv file (${csvFile}).`, true);
   }
+  core.summary.addLink(`Issue #${issueNumber}`, issueLink);
   core.summary.write();
 }
 

@@ -15,6 +15,10 @@ inputs:
   token:
     description: "GitHub Token"
     required: false
+  api_url:
+    description: "GitHub's API url"
+    required: false
+    default: "https://api.github.com"
 
   # CSV
   csv_file_path:
