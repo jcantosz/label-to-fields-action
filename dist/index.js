@@ -29391,7 +29391,8 @@ async function main() {
       label: ${label}
       apiUrl: ${auth.apiUrl}
       `);
-  core.info(`Issue link: ${issueLink}`);
+  core.info(`Issue #${issueNumber}: ${issueLink}`);
+  core.summary.addLink(`Issue #${issueNumber}`, issueLink);
   // read labels
   const csv = readCSV(csvFile);
   core.debug(`csv: ${JSON.stringify(csv)}`);
@@ -29426,7 +29427,6 @@ async function main() {
     core.info(`Label ${label} not found in csv file (${csvFile}). Exiting`);
     core.summary.addRaw(`Label "${label}" not found in csv file (${csvFile}).`, true);
   }
-  core.summary.addLink(`Issue #${issueNumber}`, issueLink);
   core.summary.write();
 }
 
