@@ -4,7 +4,7 @@ description: "A GitHub Action that sets project fields for an issue based on the
 inputs:
   # Auth
   app_id:
-    description: "GitHub App ID"
+    description: "GitHub App or Client ID"
     required: false
   app_private_key:
     description: "GitHub App Private Key"

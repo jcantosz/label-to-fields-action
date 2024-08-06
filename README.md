@@ -9,7 +9,7 @@ Each line must have a value in the label column and have the value of the single
 
 ## Inputs
 
-- **`app_id`**: GitHub App ID. (Optional)
+- **`app_id`**: GitHub App or Client (preferred) ID. (Optional)
 - **`app_private_key`**: GitHub App Private Key. (Optional)
 - **`app_installation_id`**: GitHub App Installation ID. (Optional)
 - **`token`**: GitHub Token. (Optional)

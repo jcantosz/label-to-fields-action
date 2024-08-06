@@ -2,6 +2,7 @@ const fs = await import("fs");
 const core = await import("@actions/core");
 import { graphql } from "@octokit/graphql";
 import * as github from "@actions/github";
+const { createAppAuth } = await import("@octokit/auth-app");
 const { parse } = await import("csv-parse/sync");
 
 const payload = github.context.payload;
