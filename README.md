@@ -7,6 +7,8 @@ One of the headers is for the label, and the other headers are the names of the 
 
 Each line must have a value in the label column and have the value of the single select you wish to set. You may leave fields empty if no property should be set.
 
+Known limits: This code does not paginate graphql results. If you have more than 100 project items associated with the issue or more than 100 fields in the specified project the code may not function as expected.
+
 ## Inputs
 
 - **`app_id`**: GitHub App or Client (preferred) ID. (Optional)
