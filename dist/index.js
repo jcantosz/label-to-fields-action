@@ -29204,8 +29204,8 @@ const { parse } = await __nccwpck_require__.e(/* import() */ 936).then(__nccwpck
 const payload = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.payload;
 core.debug(`Trigger payload: ${JSON.stringify(payload)}`);
 
+// Inputs
 const csvFile = core.getInput("CSV_FILE_PATH");
-
 const auth = {
   appId: core.getInput("APP_ID"),
   appPrivateKey: core.getInput("APP_PRIVATE_KEY"),
@@ -29227,6 +29227,7 @@ const label = core.getInput("LABEL") || payload?.label?.name;
 const ghBaseUrl = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.server_url || "github.com";
 const issueLink = payload?.issue?.html_url || `https://${ghBaseUrl}/${org}/${repo}/issues/${issueNumber}`;
 
+//
 function getGraphQLAppClient() {
   const appAuth = createAppAuth({
     appId: auth.appId,
@@ -29300,24 +29301,32 @@ async function getProjectProperties(graphqlWithAuth, org, repo, issueNumber, pro
 }
 
 async function updateProjectField(graphqlWithAuth, projectId, itemId, fieldId, optionId) {
-  await graphqlWithAuth(`
-  mutation updateState{
-    updateProjectV2ItemFieldValue(
-      input: {
-        projectId: "${projectId}"
-        itemId: "${itemId}"
-        fieldId: "${fieldId}"
-        value: {
-          singleSelectOptionId: "${optionId}"
+  await graphqlWithAuth(
+    `
+      mutation updateState($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+        updateProjectV2ItemFieldValue(
+          input: {
+            projectId: $projectId
+            itemId: $itemId
+            fieldId: $fieldId
+            value: {
+              singleSelectOptionId: $optionId
+            }
+          }
+        ){
+          projectV2Item{
+            id
+          }
         }
       }
-    ){
-      projectV2Item{
-        id
-      }
+    `,
+    {
+      projectId: projectId,
+      itemId: itemId,
+      fieldId: fieldId,
+      optionId: optionId,
     }
-  }
-`);
+  );
 }
 
 function getFieldData(fieldsList, fieldNames) {
@@ -29428,6 +29437,17 @@ async function main() {
     core.summary.addRaw(`Label "${label}" not found in csv file (${csvFile}).`, true);
   }
   core.summary.write();
+}
+
+// Overwrite unavailable function when running locally
+if (process.env.NODE_ENV == "dev") {
+  console.log(`
+    NODE_ENV = 'dev'
+    \t- core.summary.write() will only log to stdout
+    `);
+  core.summary.write = function () {
+    console.log(`Summary details (skipping output): "${core.summary.stringify()}"`);
+  };
 }
 
 main();

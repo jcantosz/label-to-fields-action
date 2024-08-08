@@ -1,6 +1,6 @@
 # Issue Label to Project Field(s)
 
-When an issue is labelled, apply one or more custom fields to it on a project the issue is associated with. The fields applied must be single select.
+When an issue is labelled, apply one or more custom fields to it on a project the issue is associated with. At present, **the fields applied must be single select.**
 
 The mapping between issue label and field + value is maintained in a csv file. The CSV file should have headers as the first line.
 One of the headers is for the label, and the other headers are the names of the custom fields you wish to set.
@@ -26,6 +26,21 @@ Each line must have a value in the label column and have the value of the single
 ## Outputs
 
 None
+
+## Permissions
+
+### GitHub App or Fine-grained Token
+
+- Repository permissions
+  - issues: read
+  - metadata: read
+- Organization permissions
+  - projects: read and write
+
+### PAT (classic)
+
+- project
+- read
 
 ## Usage
 
@@ -91,4 +106,37 @@ jobs:
           repository: ${{ github.event.repository }}
           issue_number: ${{ github.event.issue.number }}
           project_number: 1
+```
+
+## Local setup/development
+
+1. Install the dependencies
+
+```bash
+npm install
+npm install -g @vercel/ncc # Install ncc globally if planning to update the action's dist
+```
+
+2. Create a `env.local` file, and fill in its values
+
+```bash
+cp env.local.tmpl env.local
+# edit env.local with your values
+```
+
+3. Create/update the csv (`env.local` points to `sample/label-fields.csv` by default)
+
+- First line are the headers. One should represent the issue label, the rest should be the names of fields in the project
+- Every other line should be values. For the issue label column, this should be the label. For the other columns this should be the single select field text to search for
+
+4. Run the application
+
+```bash
+npm start # Runs: ". ./env.local && node index.js"
+```
+
+5. Update `dist` with any changes
+
+```bash
+npm run build # Runs: ncc build index.js -o dist
 ```
