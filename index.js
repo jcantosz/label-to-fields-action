@@ -172,6 +172,11 @@ async function updateIssueFields(graphqlWithAuth, projectId, itemId, label, csvL
       core.info(`Setting field: ${field} to ${fieldOption}`);
       // get the id for the selected options
       const fieldId = getFieldId(fieldsData, field);
+
+      if (!fieldId) {
+        throw new Error(`Field ${field} not found in project number ${projectNumber}. Typo in your CSV?`);
+      }
+
       const fieldOptionId = getOptionId(fieldsData, field, fieldOption);
 
       // update the item in the project if everything is et
@@ -182,7 +187,7 @@ async function updateIssueFields(graphqlWithAuth, projectId, itemId, label, csvL
         core.summary.addRaw(`Setting field "${field}" to "${fieldOption}"`, true);
         updateProjectField(graphqlWithAuth, projectId, itemId, fieldId, fieldOptionId);
       } else {
-        core.error(`Invalid field or option selected for label "${label}" -> ${field}:${fieldOption}`);
+        throw new Error(`Invalid field or option selected for label "${label}" -> ${field}:${fieldOption}`);
       }
     }
   }
@@ -190,6 +195,11 @@ async function updateIssueFields(graphqlWithAuth, projectId, itemId, label, csvL
 
 function getProjectId(properties) {
   return properties.id;
+}
+
+function fail(message) {
+  core.setFailed(message);
+  process.exit();
 }
 
 async function main() {
@@ -229,16 +239,24 @@ async function main() {
     const projectId = getProjectId(projectV2);
 
     const projectItems = properties.organization.repository.issue.projectItems.nodes;
+
+    // Bail out if there are no project items (issue not associated with a project)
     const projectItemId = getProjectItemId(projectItems, projectId);
+    if (!projectItemId) {
+      fail(`Issue #${issueNumber} not attached to the project number ${projectNumber}.`);
+    }
 
     const fieldsData = getFieldData(projectV2.fields.nodes, projectKeys);
 
     // for the label applied to the issue
     core.info("Updating project fields");
-    updateIssueFields(graphqlWithAuth, projectId, projectItemId, label, csvLine, projectKeys, fieldsData);
+    try {
+      updateIssueFields(graphqlWithAuth, projectId, projectItemId, label, csvLine, projectKeys, fieldsData);
+    } catch (error) {
+      fail(error);
+    }
   } else {
-    core.info(`Label ${label} not found in csv file (${csvFile}). Exiting`);
-    core.summary.addRaw(`Label "${label}" not found in csv file (${csvFile}).`, true);
+    fail(`Label "${label}" not found in csv file (${csvFile}).`);
   }
   core.summary.write();
 }
