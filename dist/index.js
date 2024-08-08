@@ -29452,7 +29452,8 @@ async function main() {
       fail(error);
     }
   } else {
-    fail(`Label "${label}" not found in csv file (${csvFile}).`);
+    core.info(`Input Label "${label}" not found in csv file (${csvFile}). No action taken.`);
+    core.summary.addRaw(`Input Label "${label}" not found in csv file (${csvFile}). No action taken.`, true);
   }
   core.summary.write();
 }
